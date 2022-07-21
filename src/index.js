@@ -7,6 +7,10 @@ require('./db/mongoose');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// app.use((_req, res) => {
+//   res.status(503).send('Server temporaly unavailable');
+// });
+
 app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);
