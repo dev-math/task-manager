@@ -6,13 +6,18 @@ const router = new express.Router();
 
 // create user
 router.post('/users', async (req, res) => {
-  const user = new User(req.body);
   try {
+    const user = new User(req.body);
+    const isSetted = await User.findOne({ email: user.email });
+    if (isSetted) {
+      throw new Error('Email exists');
+    }
+
     await user.save();
     const token = await user.generateAuthToken();
     res.status(201).send({ user, token });
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send();
   }
 });
 
