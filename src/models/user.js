@@ -3,6 +3,8 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const Task = require('./task.js');
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -47,12 +49,35 @@ const userSchema = new mongoose.Schema({
       required: true
     }
   }],
+}, {
+    timestamps: true
+  });
+
+// user tasks
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'owner'
 });
+
+// get public info about the user
+userSchema.methods.toJSON = function() {
+  const user = this;
+
+  const userObj = user.toObject();
+
+  delete userObj._id;
+  delete userObj.__v;
+  delete userObj.password;
+  delete userObj.tokens;
+
+  return userObj;
+}
 
 // generate jwt token
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString()}, 'secretkey');
+  const token = jwt.sign({ _id: user._id.toString() }, 'secretkey');
 
   user.tokens = user.tokens.concat({ token });
   await user.save();
@@ -73,17 +98,26 @@ userSchema.statics.findByCredentials = async (email, password) => {
   if (!isMatch) {
     throw new Error('Unable to login');
   }
-  
+
   return user;
 }
 
 // hash password before saving
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function(next) {
   const user = this;
 
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password, 8);
   }
+
+  next();
+});
+
+// Delete user tasks when user is removed
+userSchema.pre('remove', async function(next) {
+  const user = this;
+
+  await Task.deleteMany({ owner: user._id });
 
   next();
 });
