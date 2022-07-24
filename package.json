@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon -r dotenv/config src/index.js",
-    "test": "DOTENV_CONFIG_PATH=./test.env jest --watch --runInBand --setupFiles dotenv/config"
+    "test": "DOTENV_CONFIG_PATH=./.env.test.local jest --watch --runInBand --setupFiles dotenv/config"
   },
   "jest": {
     "testEnvironment": "node"
