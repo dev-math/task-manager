@@ -121,8 +121,6 @@ router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) 
 // get user avatar
 router.get('/users/me/avatar', auth, async (req, res) => {
   try {
-    // const user = await User.findById('62da3f302ff75843cebc1d75');
-
     if (!req.user.avatar) {
       throw new Error();
     }
